@@ -1,0 +1,13 @@
+{
+  "name": "orbitview",
+  "version": "0.1.0",
+  "dependencies": [
+    "opencv4",
+    {
+      "name": "qt6",
+      "default-features": false,
+      "features": ["qtbase", "qtwidgets"]
+    },
+    "eigen3"
+  ]
+}

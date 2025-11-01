@@ -1,0 +1,28 @@
+# Build directories
+build/
+out/
+cmake-build-*/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Compiled files
+*.exe
+*.dll
+*.so
+*.obj
+*.o
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+
+# vcpkg
+vcpkg_installed/
+
+# OS files
+.DS_Store
