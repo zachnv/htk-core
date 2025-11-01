@@ -8,7 +8,7 @@ namespace OrbitView {
 
     // 6DOF tracking data structure
     struct TrackingData {
-        // Translation (millimeters from center position)
+        // Translation (mm from center position)
         float x = 0.0f;
         float y = 0.0f;
         float z = 0.0f;
@@ -20,8 +20,8 @@ namespace OrbitView {
 
         // Metadata
         uint64_t timestamp = 0;  // Microseconds since epoch
-        float confidence = 0.0f; // 0.0 to 1.0 - tracking quality
-        bool isValid = false;    // Is this data usable?
+        float confidence = 0.0f; // 0.0 to 1.0
+        bool isValid = false;
 
         // Helper to get current timestamp
         static uint64_t now() {
