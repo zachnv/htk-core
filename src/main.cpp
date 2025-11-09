@@ -12,8 +12,8 @@ int main(int argc, char *argv[]) {
 
     // Create main window
     QMainWindow window;
-    window.setWindowTitle("OrbitView - Head Tracker");
-    window.resize(800, 700);
+    window.setWindowTitle("OrbitView");
+    window.resize(1100, 700);
 
     // Create central widget with layout
     QWidget* centralWidget = new QWidget(&window);
