@@ -1,9 +1,9 @@
 # OrbitView
 
-Modern webcam-based head tracking for flight simulators.
+Actively maintained, open-source webcam-based head tracking for simulation games in C++.
 
 ## Features
 - 6DOF head tracking using webcam
-- Support for DCS World and Microsoft Flight Simulator
+- Support for all simulators (mainly: DCS World & Microsoft Flight Simulator)
 - Low latency tracking
-- Modern Qt6 interface
+- Qt6 interface
