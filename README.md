@@ -1,6 +1,6 @@
 # OrbitView
 
-Actively maintained, open-source webcam-based head tracking for simulation games in C++.
+Actively maintained, open-source webcam-based head tracking for simulation games in C++ utilizing FreeTrack and TrackIR input and output protocols.
 This is very much work-in-progress and actively being worked on and optimized.
 
 ## Features & Roadmap
