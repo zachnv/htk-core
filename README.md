@@ -1,12 +1,20 @@
-# OrbitView
+# Head-Tracking Kit (HTK)
 
-Actively maintained, open-source webcam-based head tracking for simulation games in C++ utilizing FreeTrack and TrackIR input and output protocols.
-This is very much work-in-progress and actively being worked on and optimized.
+A lightweight, open-source, webcam-based head-tracking system for simulation games, written in C++.
+Supports FreeTrack and TrackIR-compatible input and output protocols.
 
-## Features & Roadmap
-- 6DOF head tracking using webcam
-- Support for all simulators (mainly: DCS World & Microsoft Flight Simulator)
-- Low latency tracking
-- Qt6 interface
-- Optimize headtracking and head-pose estimation so that, even when your head is turned 90 deg, it can still track the pose.
-- Currently, the head-pose estimation and landmark detection is very rough and will lose track of the face if it's turned +45 deg.
+> This project is actively developed and currently work in progress.
+
+## Features
+- 6DOF head tracking using a standard webcam
+- Compatible with major simulators  
+  *(tested mainly with DCS World and Microsoft Flight Simulator)*
+- Low-latency tracking
+- Qt6–based user interface
+- FreeTrack and TrackIR protocol support
+
+## Roadmap
+- Improve head-pose estimation robustness at extreme angles  
+  *(target: reliable tracking up to ~90° head rotation)*
+- Reduce landmark loss beyond ~45° head rotation
+- Further latency and stability optimizations
