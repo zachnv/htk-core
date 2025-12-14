@@ -1,8 +1,10 @@
 #include "HeadTracker.h"
+
 #include <iostream>
 #include <chrono>
+#include <thread>
 
-namespace OrbitView {
+namespace htk::core {
 
 HeadTracker::HeadTracker()
     : m_isRunning(false)
@@ -11,11 +13,11 @@ HeadTracker::HeadTracker()
     , m_freeTrackEnabled(true)
     , m_trackIREnabled(true)
 {
-    m_webcamTracker = std::make_unique<WebcamTracker>();
+    m_webcamTracker = std::make_unique<htk::input::WebcamTracker>();
 
 #ifdef _WIN32
     m_freeTrackOutput = std::make_unique<FreeTrackOutput>();
-    m_trackIROutput = std::make_unique<TrackIROutput>();
+    m_trackIROutput  = std::make_unique<TrackIROutput>();
 #endif
 
     m_currentData.reset();
@@ -27,11 +29,11 @@ HeadTracker::~HeadTracker() {
 }
 
 bool HeadTracker::initialize(int cameraIndex) {
-    std::cout << "Initializing OrbitView..." << std::endl;
+    std::cout << "Initializing Head-Tracking Kit..." << std::endl;
 
     // Initialize webcam tracker
     if (!m_webcamTracker->initialize(cameraIndex)) {
-        std::cerr << "Failed to initialize OrbitView" << std::endl;
+        std::cerr << "Failed to initialize Head-Tracking Kit" << std::endl;
         return false;
     }
 
@@ -59,24 +61,24 @@ bool HeadTracker::initialize(int cameraIndex) {
     std::cout << "Note: Output protocols are only available on Windows" << std::endl;
 #endif
 
-    std::cout << "OrbitView initialized successfully" << std::endl;
+    std::cout << "Head-Tracking Kit initialized successfully" << std::endl;
     return true;
 }
 
 bool HeadTracker::start() {
     if (m_isRunning) {
-        std::cout << "OrbitView already running!" << std::endl;
+        std::cout << "Head-Tracking Kit already running" << std::endl;
         return true;
     }
 
     m_shouldStop = false;
-    m_isPaused = false;
-    m_isRunning = true;
+    m_isPaused   = false;
+    m_isRunning  = true;
 
     // Start update thread
     m_updateThread = std::make_unique<std::thread>(&HeadTracker::updateLoop, this);
 
-    std::cout << "OrbitView started!" << std::endl;
+    std::cout << "Head-Tracking Kit started" << std::endl;
     return true;
 }
 
@@ -85,7 +87,7 @@ void HeadTracker::stop() {
         return;
     }
 
-    std::cout << "OrbitView stopping..." << std::endl;
+    std::cout << "Head-Tracking Kit stopping..." << std::endl;
 
     m_shouldStop = true;
 
@@ -94,20 +96,26 @@ void HeadTracker::stop() {
     }
 
     m_isRunning = false;
-    std::cout << "OrbitView stopped..." << std::endl;
+    std::cout << "Head-Tracking Kit stopped" << std::endl;
 }
 
 void HeadTracker::shutdown() {
     stop();
 
-    m_webcamTracker->shutdown();
+    if (m_webcamTracker) {
+        m_webcamTracker->shutdown();
+    }
 
 #ifdef _WIN32
-    m_freeTrackOutput->shutdown();
-    m_trackIROutput->shutdown();
+    if (m_freeTrackOutput) {
+        m_freeTrackOutput->shutdown();
+    }
+    if (m_trackIROutput) {
+        m_trackIROutput->shutdown();
+    }
 #endif
 
-    std::cout << "OrbitView shutdown complete..." << std::endl;
+    std::cout << "Head-Tracking Kit shutdown complete" << std::endl;
 }
 
 void HeadTracker::recenter() {
@@ -116,19 +124,20 @@ void HeadTracker::recenter() {
     // Store current position as center offset
     m_centerOffset = m_currentData;
 
-    std::cout << "Recentered at: yaw=" << m_centerOffset.yaw
-              << " pitch=" << m_centerOffset.pitch
-              << " roll=" << m_centerOffset.roll << std::endl;
+    std::cout << "Recentered at: yaw="   << m_centerOffset.yaw
+              << " pitch="              << m_centerOffset.pitch
+              << " roll="               << m_centerOffset.roll
+              << std::endl;
 }
 
 void HeadTracker::pause() {
     m_isPaused = true;
-    std::cout << "OrbitView paused" << std::endl;
+    std::cout << "Head-Tracking Kit paused" << std::endl;
 }
 
 void HeadTracker::resume() {
     m_isPaused = false;
-    std::cout << "OrbitView resumed" << std::endl;
+    std::cout << "Head-Tracking Kit resumed" << std::endl;
 }
 
 bool HeadTracker::isTracking() const {
@@ -157,13 +166,13 @@ void HeadTracker::enableTrackIR(bool enable) {
 void HeadTracker::updateLoop() {
     using namespace std::chrono;
 
-    const int targetFPS = 60;
+    constexpr int targetFPS = 60;
     const auto targetFrameTime = milliseconds(1000 / targetFPS);
 
     std::cout << "Update loop started (target: " << targetFPS << " FPS)" << std::endl;
 
     while (!m_shouldStop) {
-        auto frameStart = steady_clock::now();
+        const auto frameStart = steady_clock::now();
 
         if (!m_isPaused) {
             // Update webcam tracker
@@ -174,49 +183,49 @@ void HeadTracker::updateLoop() {
                 // Apply center offset
                 TrackingData centeredData = applyCenterOffset(rawData);
 
-                // Update current data
+                // Update shared data
                 {
                     std::lock_guard<std::mutex> lock(m_dataMutex);
                     m_currentData = centeredData;
                 }
 
 #ifdef _WIN32
-                // Send to output
-                if (m_freeTrackEnabled && centeredData.isValid) {
-                    m_freeTrackOutput->sendData(centeredData);
-                }
-
-                if (m_trackIREnabled && centeredData.isValid) {
-                    m_trackIROutput->sendData(centeredData);
+                // Send to outputs
+                if (centeredData.isValid) {
+                    if (m_freeTrackEnabled) {
+                        m_freeTrackOutput->sendData(centeredData);
+                    }
+                    if (m_trackIREnabled) {
+                        m_trackIROutput->sendData(centeredData);
+                    }
                 }
 #endif
             }
         }
-        
+
         // Frame rate limiting
-        auto frameEnd = steady_clock::now();
-        auto frameTime = duration_cast<milliseconds>(frameEnd - frameStart);
-        
+        const auto frameEnd  = steady_clock::now();
+        const auto frameTime = duration_cast<milliseconds>(frameEnd - frameStart);
+
         if (frameTime < targetFrameTime) {
             std::this_thread::sleep_for(targetFrameTime - frameTime);
         }
     }
-    
+
     std::cout << "Update loop stopped" << std::endl;
 }
 
 TrackingData HeadTracker::applyCenterOffset(const TrackingData& data) const {
     TrackingData result = data;
-    
-    // Subtract center offset from current position
-    result.yaw -= m_centerOffset.yaw;
+
+    result.yaw   -= m_centerOffset.yaw;
     result.pitch -= m_centerOffset.pitch;
-    result.roll -= m_centerOffset.roll;
-    result.x -= m_centerOffset.x;
-    result.y -= m_centerOffset.y;
-    result.z -= m_centerOffset.z;
-    
+    result.roll  -= m_centerOffset.roll;
+    result.x     -= m_centerOffset.x;
+    result.y     -= m_centerOffset.y;
+    result.z     -= m_centerOffset.z;
+
     return result;
 }
 
-} // namespace OrbitView
+} // namespace htk::core

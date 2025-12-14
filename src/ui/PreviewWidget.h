@@ -4,38 +4,60 @@
 #include <QWidget>
 #include <QImage>
 #include <QTimer>
+
 #include <opencv2/opencv.hpp>
-#include "../core/HeadTracker.h"
 
-namespace OrbitView {
+// Forward declaration
+namespace htk::core {
+    class HeadTracker;
+}
 
+namespace htk::ui {
+
+    // Preview Widget
     class PreviewWidget : public QWidget {
         Q_OBJECT
 
     public:
+        // Create preview widget
         explicit PreviewWidget(QWidget* parent = nullptr);
         ~PreviewWidget();
 
-        void setHeadTracker(HeadTracker* tracker);
+        // Attach head tracker instance
+        void setHeadTracker(htk::core::HeadTracker* tracker);
+
+        // Start / stop preview updates
         void startPreview();
         void stopPreview();
 
     protected:
+        // Qt paint callback
         void paintEvent(QPaintEvent* event) override;
 
     private slots:
+        // Called to update frame & redraw
         void updateFrame();
 
     private:
-        HeadTracker* m_tracker;
-        QTimer* m_updateTimer;
+        // Pointer to core head tracker
+        htk::core::HeadTracker* m_tracker = nullptr;
+
+        // Timer driving preview refresh (30 FPS)
+        QTimer* m_updateTimer = nullptr;
+
+        // Current camera frame converted to QImage
         QImage m_currentImage;
 
+        // Convert OpenCV Mat to QImage
         QImage cvMatToQImage(const cv::Mat& mat);
+
+        // Draw text and tracking info
         void drawTrackingInfo(QPainter& painter);
+
+        // Draw simple head orientation indicator
         void drawHeadIndicator(QPainter& painter);
     };
 
-} // namespace OrbitView
+} // namespace htk::ui
 
 #endif // PREVIEWWIDGET_H

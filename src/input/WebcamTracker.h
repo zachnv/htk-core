@@ -4,9 +4,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/objdetect.hpp>
 #include <string>
+
 #include "../core/TrackingData.h"
 
-namespace OrbitView {
+namespace htk::input {
 
     class WebcamTracker {
     public:
@@ -20,7 +21,7 @@ namespace OrbitView {
         bool update();
 
         // Get current tracking data
-        TrackingData getTrackingData() const;
+        htk::core::TrackingData getTrackingData() const;
 
         // Get current camera frame for preview
         cv::Mat getCurrentFrame() const;
@@ -39,8 +40,8 @@ namespace OrbitView {
         cv::Mat m_currentFrame;
         cv::Rect m_lastFaceRect;
 
-        TrackingData m_trackingData;
-        TrackingData m_centerPosition;
+        htk::core::TrackingData m_trackingData;
+        htk::core::TrackingData m_centerPosition;
 
         bool m_isInitialized;
         bool m_isTracking;
@@ -49,9 +50,9 @@ namespace OrbitView {
         // Internal methods
         bool detectFace(const cv::Mat& frame, cv::Rect& faceRect);
         void estimatePose(const cv::Rect& faceRect);
-        void smoothData(TrackingData& data);
+        void smoothData(htk::core::TrackingData& data);
     };
 
-} // namespace OrbitView
+} // namespace htk::input
 
 #endif // WEBCAMTRACKER_H

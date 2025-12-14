@@ -8,7 +8,7 @@
 #include <windows.h>
 #endif
 
-namespace OrbitView {
+namespace htk::output {
 
     class FreeTrackOutput {
     public:
@@ -19,7 +19,7 @@ namespace OrbitView {
         bool initialize();
 
         // Send tracking data to games
-        bool sendData(const TrackingData& data);
+        bool sendData(const htk::core::TrackingData& data);
 
         // Cleanup
         void shutdown();
@@ -27,11 +27,11 @@ namespace OrbitView {
         bool isInitialized() const { return m_isInitialized; }
 
     private:
-        bool m_isInitialized;
+        bool m_isInitialized = false;
 
 #ifdef _WIN32
-        HANDLE m_hMapFile;
-        void* m_pMemory;
+        HANDLE m_hMapFile = nullptr;
+        void* m_pMemory = nullptr;
 
         // FreeTrack shared memory structure
         struct FreeTrackData {
@@ -59,10 +59,10 @@ namespace OrbitView {
             float x1, y1, x2, y2, x3, y3, x4, y4;
         };
 
-        uint32_t m_dataID;
+        uint32_t m_dataID = 0;
 #endif
     };
 
-} // namespace OrbitView
+} // namespace htk::output
 
 #endif // FREETRACKOUTPUT_H

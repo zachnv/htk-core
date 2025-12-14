@@ -14,7 +14,7 @@
 #include <atomic>
 #include <mutex>
 
-namespace OrbitView {
+namespace htk::core {
 
     class HeadTracker {
     public:
@@ -35,7 +35,7 @@ namespace OrbitView {
         // Status
         bool isRunning() const { return m_isRunning; }
         bool isTracking() const;
-        TrackingData getCurrentData() const;
+        htk::core::TrackingData getCurrentData() const;
 
         // Settings
         void setSmoothing(float factor);
@@ -44,35 +44,37 @@ namespace OrbitView {
 
     private:
         // Components
-        std::unique_ptr<WebcamTracker> m_webcamTracker;
+        std::unique_ptr<htk::input::WebcamTracker> m_webcamTracker;
 
 #ifdef _WIN32
-        std::unique_ptr<FreeTrackOutput> m_freeTrackOutput;
-        std::unique_ptr<TrackIROutput> m_trackIROutput;
+        std::unique_ptr<htk::output::FreeTrackOutput> m_freeTrackOutput;
+        std::unique_ptr<htk::output::TrackIROutput>  m_trackIROutput;
 #endif
 
         // Threading
         std::unique_ptr<std::thread> m_updateThread;
-        std::atomic<bool> m_isRunning;
-        std::atomic<bool> m_isPaused;
-        std::atomic<bool> m_shouldStop;
+        std::atomic<bool> m_isRunning{false};
+        std::atomic<bool> m_isPaused{false};
+        std::atomic<bool> m_shouldStop{false};
 
         // Data
-        TrackingData m_currentData;
-        TrackingData m_centerOffset;
+        htk::core::TrackingData m_currentData;
+        htk::core::TrackingData m_centerOffset;
         mutable std::mutex m_dataMutex;
 
         // Settings
-        bool m_freeTrackEnabled;
-        bool m_trackIREnabled;
+        bool m_freeTrackEnabled{true};
+        bool m_trackIREnabled{true};
 
         // Update loop (runs in separate thread)
         void updateLoop();
 
         // Apply center offset to data
-        TrackingData applyCenterOffset(const TrackingData& data) const;
+        htk::core::TrackingData applyCenterOffset(
+            const htk::core::TrackingData& data
+        ) const;
     };
 
-} // namespace OrbitView
+} // namespace htk::core
 
 #endif // HEADTRACKER_H

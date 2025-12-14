@@ -1,8 +1,11 @@
 #include "FreeTrackOutput.h"
+
 #include <iostream>
 #include <cmath>
 
-namespace OrbitView {
+#include "../core/TrackingData.h"
+
+namespace htk::output {
 
 FreeTrackOutput::FreeTrackOutput()
     : m_isInitialized(false)
@@ -29,12 +32,13 @@ bool FreeTrackOutput::initialize() {
         sizeof(FreeTrackData),
         "FT_SharedMem"
     );
-    
+
     if (m_hMapFile == NULL) {
-        std::cerr << "Failed to create FreeTrack shared memory. Error: " << GetLastError() << std::endl;
+        std::cerr << "Failed to create FreeTrack shared memory. Error: "
+                  << GetLastError() << std::endl;
         return false;
     }
-    
+
     m_pMemory = MapViewOfFile(
         m_hMapFile,
         FILE_MAP_ALL_ACCESS,
@@ -42,17 +46,18 @@ bool FreeTrackOutput::initialize() {
         0,
         sizeof(FreeTrackData)
     );
-    
+
     if (m_pMemory == nullptr) {
-        std::cerr << "Failed to map FreeTrack shared memory. Error: " << GetLastError() << std::endl;
+        std::cerr << "Failed to map FreeTrack shared memory. Error: "
+                  << GetLastError() << std::endl;
         CloseHandle(m_hMapFile);
         m_hMapFile = nullptr;
         return false;
     }
-    
+
     // Initialize memory to zero
     ZeroMemory(m_pMemory, sizeof(FreeTrackData));
-    
+
     m_isInitialized = true;
     std::cout << "FreeTrack output initialized successfully" << std::endl;
     return true;
@@ -62,48 +67,50 @@ bool FreeTrackOutput::initialize() {
 #endif
 }
 
-bool FreeTrackOutput::sendData(const TrackingData& data) {
+bool FreeTrackOutput::sendData(const htk::core::TrackingData& data) {
     if (!m_isInitialized) {
         return false;
     }
-    
+
 #ifdef _WIN32
     if (m_pMemory == nullptr) {
         return false;
     }
-    
-    FreeTrackData* ftData = static_cast<FreeTrackData*>(m_pMemory);
-    
+
+    auto* ftData = static_cast<FreeTrackData*>(m_pMemory);
+
     // Convert degrees to radians
-    const float degToRad = 3.14159265359f / 180.0f;
-    
+    constexpr float degToRad = 3.14159265359f / 180.0f;
+
     // Fill in the data
-    ftData->dataID = ++m_dataID;  // Increment frame counter
+    ftData->dataID = ++m_dataID;
     ftData->camWidth = 640;
     ftData->camHeight = 480;
-    
-    // Convert tracking data (degrees to radians)
-    ftData->yaw = data.yaw * degToRad;
+
+    // Orientation
+    ftData->yaw   = data.yaw   * degToRad;
     ftData->pitch = data.pitch * degToRad;
-    ftData->roll = data.roll * degToRad;
+    ftData->roll  = data.roll  * degToRad;
+
+    // Translation
     ftData->x = data.x;
     ftData->y = data.y;
     ftData->z = data.z;
-    
-    // Copy to raw data
-    ftData->rawyaw = ftData->yaw;
+
+    // Raw values
+    ftData->rawyaw   = ftData->yaw;
     ftData->rawpitch = ftData->pitch;
-    ftData->rawroll = ftData->roll;
-    ftData->rawx = ftData->x;
-    ftData->rawy = ftData->y;
-    ftData->rawz = ftData->z;
-    
+    ftData->rawroll  = ftData->roll;
+    ftData->rawx     = ftData->x;
+    ftData->rawy     = ftData->y;
+    ftData->rawz     = ftData->z;
+
     // Point data
     ftData->x1 = ftData->y1 = 0.0f;
     ftData->x2 = ftData->y2 = 0.0f;
     ftData->x3 = ftData->y3 = 0.0f;
     ftData->x4 = ftData->y4 = 0.0f;
-    
+
     return true;
 #else
     return false;
@@ -116,14 +123,14 @@ void FreeTrackOutput::shutdown() {
         UnmapViewOfFile(m_pMemory);
         m_pMemory = nullptr;
     }
-    
+
     if (m_hMapFile != nullptr) {
         CloseHandle(m_hMapFile);
         m_hMapFile = nullptr;
     }
 #endif
-    
+
     m_isInitialized = false;
 }
 
-} // namespace OrbitView
+} // namespace htk::output

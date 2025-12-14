@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <chrono>
 
-namespace OrbitView {
+namespace htk::core {
 
     // 6DOF tracking data structure
     struct TrackingData {
@@ -41,6 +41,6 @@ namespace OrbitView {
         }
     };
 
-} // namespace OrbitView
+} // namespace htk::core
 
 #endif // TRACKINGDATA_H

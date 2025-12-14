@@ -4,15 +4,16 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
+
 #include "core/HeadTracker.h"
 #include "ui/PreviewWidget.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     // Create main window
     QMainWindow window;
-    window.setWindowTitle("OrbitView");
+    window.setWindowTitle("Head-Tracking Kit");
     window.resize(1100, 700);
 
     // Create central widget with layout
@@ -20,7 +21,7 @@ int main(int argc, char *argv[]) {
     QVBoxLayout* layout = new QVBoxLayout(centralWidget);
 
     // Add preview widget
-    OrbitView::PreviewWidget* preview = new OrbitView::PreviewWidget(centralWidget);
+    auto* preview = new htk::ui::PreviewWidget(centralWidget);
     layout->addWidget(preview);
 
     // Status label
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
     window.setCentralWidget(centralWidget);
 
     // Create head tracker
-    OrbitView::HeadTracker tracker;
+    htk::core::HeadTracker tracker;
     preview->setHeadTracker(&tracker);
 
     // Connect buttons

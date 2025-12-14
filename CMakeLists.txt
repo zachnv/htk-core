@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(OrbitView VERSION 0.1.0 LANGUAGES CXX)
+project(htk-core VERSION 0.1.0 LANGUAGES CXX)
 
 # macOS: Add Homebrew Qt6 to path
 if(APPLE)
@@ -30,6 +30,8 @@ set(HEADERS
         src/core/HeadTracker.h
         src/input/WebcamTracker.h
         src/ui/PreviewWidget.h
+        src/output/FreeTrackOutput.cpp
+        src/output/TrackIROutput.cpp
 )
 
 # Add output files only on Windows
@@ -46,21 +48,30 @@ endif()
 
 # Executable
 if(WIN32)
-    add_executable(OrbitView WIN32 ${SOURCES} ${HEADERS})
+    add_executable(htk_core WIN32 ${SOURCES} ${HEADERS})
 elseif(APPLE)
-    add_executable(OrbitView MACOSX_BUNDLE ${SOURCES} ${HEADERS})
+    add_executable(htk_core MACOSX_BUNDLE ${SOURCES} ${HEADERS})
 else()
-    add_executable(OrbitView ${SOURCES} ${HEADERS})
+    add_executable(htk_core ${SOURCES} ${HEADERS})
 endif()
 
+set_target_properties(htk_core PROPERTIES OUTPUT_NAME "htk-core")
+
+# ESSENTIAL
+add_custom_command(TARGET htk_core POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources
+        $<TARGET_FILE_DIR:htk_core>/resources
+)
+
 # Include directories
-target_include_directories(OrbitView PRIVATE
+target_include_directories(htk_core PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${OpenCV_INCLUDE_DIRS}
 )
 
 # Link libraries
-target_link_libraries(OrbitView PRIVATE
+target_link_libraries(htk_core PRIVATE
         ${OpenCV_LIBS}
         Qt6::Core
         Qt6::Widgets
@@ -70,14 +81,14 @@ target_link_libraries(OrbitView PRIVATE
 
 # Windows-specific
 if(WIN32)
-    target_compile_definitions(OrbitView PRIVATE UNICODE _UNICODE)
+    target_compile_definitions(htk_core PRIVATE UNICODE _UNICODE)
 endif()
 
 # Install
 if(APPLE)
-    install(TARGETS OrbitView
+    install(TARGETS htk_core
             BUNDLE DESTINATION .
             RUNTIME DESTINATION bin)
 else()
-    install(TARGETS OrbitView RUNTIME DESTINATION bin)
+    install(TARGETS htk_core RUNTIME DESTINATION bin)
 endif()

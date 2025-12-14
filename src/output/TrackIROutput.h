@@ -8,7 +8,7 @@
 #include <windows.h>
 #endif
 
-namespace OrbitView {
+namespace htk::output {
 
     class TrackIROutput {
     public:
@@ -19,7 +19,7 @@ namespace OrbitView {
         bool initialize();
 
         // Send tracking data to games
-        bool sendData(const TrackingData& data);
+        bool sendData(const htk::core::TrackingData& data);
 
         // Cleanup
         void shutdown();
@@ -27,11 +27,11 @@ namespace OrbitView {
         bool isInitialized() const { return m_isInitialized; }
 
     private:
-        bool m_isInitialized;
+        bool m_isInitialized = false;
 
 #ifdef _WIN32
-        HANDLE m_hMapFile;
-        void* m_pMemory;
+        HANDLE m_hMapFile = nullptr;
+        void* m_pMemory = nullptr;
 
         // TrackIR shared memory structure
         struct TrackIRData {
@@ -61,10 +61,10 @@ namespace OrbitView {
             float x3, y3;
         };
 
-        uint16_t m_frameCounter;
+        uint16_t m_frameCounter = 0;
 #endif
     };
 
-} // namespace OrbitView
+} // namespace htk::output
 
 #endif // TRACKIROUTPUT_H

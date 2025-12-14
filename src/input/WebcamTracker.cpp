@@ -1,7 +1,7 @@
 #include "WebcamTracker.h"
 #include <iostream>
 
-namespace OrbitView {
+namespace htk::input {
 
 WebcamTracker::WebcamTracker()
     : m_isInitialized(false)
@@ -24,12 +24,12 @@ WebcamTracker::~WebcamTracker() {
         return false;
     }
 
-    // Set camera properties for better performance
+    // Set camera properties
     m_camera.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     m_camera.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     m_camera.set(cv::CAP_PROP_FPS, 30);
 
-    // Try multiple paths for the cascade file
+    // Cascade file
     std::vector<std::string> cascadePaths = {
         "resources/models/haarcascade_frontalface_default.xml",
         "../resources/models/haarcascade_frontalface_default.xml",
@@ -57,7 +57,7 @@ WebcamTracker::~WebcamTracker() {
     }
 
     m_isInitialized = true;
-    std::cout << "OrbitView initialized successfully" << std::endl;
+    std::cout << "Head-Tracking Kit initialized successfully" << std::endl;
     return true;
 }
 
@@ -65,17 +65,17 @@ bool WebcamTracker::update() {
     if (!m_isInitialized || !m_camera.isOpened()) {
         return false;
     }
-    
+
     // Capture frame
     if (!m_camera.read(m_currentFrame)) {
         std::cerr << "Failed to read frame from camera" << std::endl;
         return false;
     }
-    
+
     if (m_currentFrame.empty()) {
         return false;
     }
-    
+
     // Detect face
     cv::Rect faceRect;
     if (detectFace(m_currentFrame, faceRect)) {
@@ -89,9 +89,9 @@ bool WebcamTracker::update() {
         m_trackingData.isValid = false;
         m_trackingData.confidence = 0.0f;
     }
-    
-    m_trackingData.timestamp = TrackingData::now();
-    
+
+    m_trackingData.timestamp = htk::core::TrackingData::now();
+
     return true;
 }
 
@@ -116,7 +116,7 @@ bool WebcamTracker::detectFace(const cv::Mat& frame, cv::Rect& faceRect) {
         return false;
     }
 
-    // Use the largest face (closest to camera)
+    // Use the largest face in view
     faceRect = faces[0];
     for (const auto& face : faces) {
         if (face.area() > faceRect.area()) {
@@ -131,35 +131,35 @@ void WebcamTracker::estimatePose(const cv::Rect& faceRect) {
     // Get frame dimensions
     int frameWidth = m_currentFrame.cols;
     int frameHeight = m_currentFrame.rows;
-    
+
     // Calculate center of face
     float faceCenterX = faceRect.x + faceRect.width / 2.0f;
     float faceCenterY = faceRect.y + faceRect.height / 2.0f;
-    
+
     // Calculate center of frame
     float frameCenterX = frameWidth / 2.0f;
     float frameCenterY = frameHeight / 2.0f;
-    
+
     // Calculate deltas from center (normalized -1 to 1)
     float deltaX = (faceCenterX - frameCenterX) / frameCenterX;
     float deltaY = (faceCenterY - frameCenterY) / frameCenterY;
-    
+
     // Estimate yaw (left/right) from horizontal position
     float newYaw = -deltaX * 45.0f;
-    
+
     // Estimate pitch (up/down) from vertical position
     float newPitch = -deltaY * 30.0f;
-    
+
     // Estimate Z (depth) from face size
     // Larger face = closer to camera = negative Z
     float referenceFaceWidth = 150.0f;
     float faceSize = static_cast<float>(faceRect.width);
     float newZ = (referenceFaceWidth - faceSize) * 2.0f;
-    
+
     // Estimate X and Y translation from face position
     float newX = deltaX * 100.0f;
     float newY = deltaY * 100.0f;
-    
+
     // Apply smoothing
     if (m_trackingData.isValid && m_smoothingFactor > 0.0f) {
         m_trackingData.yaw = m_trackingData.yaw * m_smoothingFactor + newYaw * (1.0f - m_smoothingFactor);
@@ -177,7 +177,7 @@ void WebcamTracker::estimatePose(const cv::Rect& faceRect) {
     m_trackingData.roll = 0.0f;
 }
 
-TrackingData WebcamTracker::getTrackingData() const {
+    htk::core::TrackingData WebcamTracker::getTrackingData() const {
     return m_trackingData;
 }
 
@@ -197,4 +197,4 @@ void WebcamTracker::shutdown() {
     m_isTracking = false;
 }
 
-} // namespace OrbitView
+} // namespace htk::input
