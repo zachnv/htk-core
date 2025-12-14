@@ -3,7 +3,7 @@
 A lightweight, open-source, webcam-based head-tracking system for simulation games, written in C++.
 Supports FreeTrack and TrackIR-compatible input and output protocols.
 
-> This project is actively developed and currently work in progress.
+> This project is being actively developed and currently work in progress.
 
 ## Features
 - 6DOF head tracking using a standard webcam
